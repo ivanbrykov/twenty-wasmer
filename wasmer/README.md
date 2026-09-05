@@ -28,3 +28,20 @@ The helper executes the upstream server-workspace build commands explicitly, avo
 On 2026-09-05: the full native server build passed, all 32 adapter Jest tests passed, and the actual adapter passed fixture/concurrency tests on Node and Edge.js QuickJS 0.2.0 with Wasmer 7.4.0. Compiled instrumentation loaded on Edge.js with profiling disabled; native profiling still loaded at its default rate. Native Postgres initialization/migrations and HTTP health passed using disposable local Postgres 16 and Valkey 8. The full HTTP server also reached healthy status under Edge.js, and the migration command successfully reran there against the already-initialized database.
 
 Wasmer cloud deployment, managed Postgres compatibility, external Redis quotas, the frontend/onboarding trial, and persistent worker operation are not yet validated. This branch is experimental; successful component tests do not imply production readiness.
+
+## Frontend and standalone package
+
+The frontend is unchanged by this fork. To reuse the matching official release build:
+
+```sh
+python3 wasmer/copy-release-frontend.py
+python3 wasmer/package-runtime.py
+```
+
+The first helper verifies `APP_VERSION` and extracts static files from the immutable official `v2.37.0` ARM64 image; the image is never executed. The second assembles `.wasmer/package/` from compiled workspaces and a focused production dependency install. It excludes host native addons and emits a Wasmer manifest plus a minimal app descriptor. It refuses to overwrite an existing generated package.
+
+The manifest pins Edge.js QuickJS 0.2.0 and Bash 1.0.25 and exposes `server`, `initialize`, `migrate`, `upgrade`, and `precompile` commands. It does not register a continuous worker. The `server` command does not initialize or migrate the database. The release commands are individual building blocks, not an automatically retried deployment pipeline.
+
+Before deployment, configure the Wasmer account/app placement and supply `PG_DATABASE_URL`, `REDIS_URL`, `APP_SECRET`, `ENCRYPTION_KEY`, `SERVER_URL`, and the platform's listening-port settings securely. Validate managed database capabilities and release failure/recovery behavior. Keep automatic migration retries disabled until the complete release sequence has been tested on that platform.
+
+Fresh database initialization and migrations have now also passed entirely under Edge.js against disposable local Postgres/Valkey. Hosted networking, TLS/service quotas, onboarding, and the persistent worker remain separate gates.
