@@ -45,3 +45,15 @@ The manifest pins Edge.js QuickJS 0.2.0 and Bash 1.0.25 and exposes `server`, `i
 Before deployment, configure the Wasmer account/app placement and supply `PG_DATABASE_URL`, `REDIS_URL`, `APP_SECRET`, `ENCRYPTION_KEY`, `SERVER_URL`, and the platform's listening-port settings securely. Set `NODE_ENV=production`, `SENTRY_PROFILES_SAMPLE_RATE=0`, `DISABLE_DB_MIGRATIONS=true`, and `DISABLE_CRON_JOBS_REGISTRATION=true` in that same environment source. The manifest deliberately avoids duplicate defaults: Wasmer 7.4.0/Edge.js 0.2.0 can expose duplicate keys when command-level environment entries are repeated by runtime overrides. Validate managed database capabilities and release failure/recovery behavior. Keep automatic migration retries disabled until the complete release sequence has been tested on that platform.
 
 Fresh database initialization and migrations have now also passed entirely under Edge.js against disposable local Postgres/Valkey. Hosted networking, TLS/service quotas, onboarding, and the persistent worker remain separate gates.
+
+## Standalone package result
+
+The assembled package and the built WebC both passed local backend health, frontend HTML, and main JavaScript asset checks under Wasmer 7.4.0 / Edge.js QuickJS 0.2.0. The WebC was 1,390,480,825 bytes. Directory launches measured about 139 seconds initially and 119 seconds subsequently; the WebC launch measured about 118 seconds. These are local single-run observations, not hosted p95 measurements. Startup time and artifact size require further work before a hosted trial is considered reliable.
+
+To build the WebC after assembling the package:
+
+```sh
+wasmer package build .wasmer/package --out .wasmer/twenty-v2.37.0-wasmer.webc
+```
+
+Cloud deployment has not been performed. Complete account/region, managed Postgres, Redis/TLS/quota, release-recovery, onboarding, and worker validation before expanding this experiment.
