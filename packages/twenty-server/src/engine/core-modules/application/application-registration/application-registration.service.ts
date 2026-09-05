@@ -4,7 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import crypto from 'crypto';
 
 import { isNonEmptyString } from '@sniptt/guards';
-import * as bcrypt from 'bcrypt';
+import * as bcrypt from 'src/engine/core-modules/auth/utils/bcrypt-compat.util';
 import { type Manifest } from 'twenty-shared/application';
 import { isDefined, isNonEmptyArray } from 'twenty-shared/utils';
 import { ILike, IsNull, type FindOptionsWhere, type Repository } from 'typeorm';

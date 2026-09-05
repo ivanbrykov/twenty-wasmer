@@ -71,3 +71,6 @@ screenshots/
 /.diag*.mjs
 /.compare*.mjs
 /.narrow*.mjs
+
+# Local Wasmer experiment outputs and tooling
+.wasmer/

@@ -1,3 +1,4 @@
+import { createRequire } from 'module';
 import os from 'os';
 import process from 'process';
 
@@ -13,7 +14,6 @@ import {
 } from '@opentelemetry/sdk-metrics';
 import { isNonEmptyString } from '@sniptt/guards';
 import * as Sentry from '@sentry/node';
-import { nodeProfilingIntegration } from '@sentry/profiling-node';
 
 import { NodeEnvironment } from 'src/engine/core-modules/twenty-config/interfaces/node-environment.interface';
 
@@ -51,6 +51,21 @@ if (process.env.EXCEPTION_HANDLER_DRIVER === ExceptionHandlerDriver.SENTRY) {
     fallback: 0.1,
   });
 
+  const profilesSampleRate = parseSampleRate({
+    value: process.env.SENTRY_PROFILES_SAMPLE_RATE,
+    fallback: 0.01,
+  });
+  // A zero sample rate must not load a native profiler on WASI/wasm32.
+  // Keep native deployments' existing default when profiling is enabled.
+  const profilingIntegrations =
+    profilesSampleRate > 0
+      ? [
+          createRequire(__filename)(
+            '@sentry/profiling-node',
+          ).nodeProfilingIntegration(),
+        ]
+      : [];
+
   Sentry.init({
     environment: process.env.SENTRY_ENVIRONMENT,
     release: process.env.APP_VERSION,
@@ -82,15 +97,12 @@ if (process.env.EXCEPTION_HANDLER_DRIVER === ExceptionHandlerDriver.SENTRY) {
         recordInputs: true,
         recordOutputs: true,
       }),
-      nodeProfilingIntegration(),
+      ...profilingIntegrations,
     ],
     tracesSampleRate,
     tracesSampler: ({ name, inheritOrSampleWith }) =>
       name.startsWith('ai.') ? 1 : inheritOrSampleWith(tracesSampleRate),
-    profilesSampleRate: parseSampleRate({
-      value: process.env.SENTRY_PROFILES_SAMPLE_RATE,
-      fallback: 0.01,
-    }),
+    profilesSampleRate,
     maxValueLength: 8192,
     sendDefaultPii: true,
     debug: process.env.NODE_ENV === NodeEnvironment.DEVELOPMENT,

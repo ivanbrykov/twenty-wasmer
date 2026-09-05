@@ -5,7 +5,7 @@ import {
   randomBytes,
 } from 'crypto';
 
-import * as bcrypt from 'bcrypt';
+import * as bcrypt from 'src/engine/core-modules/auth/utils/bcrypt-compat.util';
 
 export const PASSWORD_REGEX = /^.{8,50}$/;
 
