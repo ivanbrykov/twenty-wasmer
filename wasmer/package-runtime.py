@@ -56,7 +56,7 @@ commands={
 }
 import json
 for name,args in commands.items():
-    manifest+='\n[[command]]\nname = '+json.dumps(name)+'\nmodule = "wasmer/edgejs-quickjs:edge"\nrunner = "wasi"\n\n[command.annotations.wasi]\ncwd = '+json.dumps(server)+'\nmain-args = '+json.dumps(args)+'\nenv = ["NODE_ENV=production", "SENTRY_PROFILES_SAMPLE_RATE=0", "DISABLE_DB_MIGRATIONS=true", "DISABLE_CRON_JOBS_REGISTRATION=true"]\n'
+    manifest+='\n[[command]]\nname = '+json.dumps(name)+'\nmodule = "wasmer/edgejs-quickjs:edge"\nrunner = "wasi"\n\n[command.annotations.wasi]\ncwd = '+json.dumps(server)+'\nmain-args = '+json.dumps(args)+'\n'
 (package/'wasmer.toml').write_text(manifest)
 (package/'app.yaml').write_text('kind: wasmer.io/App.v0\npackage: .\n')
 print('Standalone package assembled at',package)
